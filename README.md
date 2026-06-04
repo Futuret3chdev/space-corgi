@@ -53,19 +53,20 @@ Click the button at the top of this README, or use:
 
 https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2FFuturet3chdev%2Fcorgonaut
 
+### Live Demo
+**https://corgi-space-game.vercel.app**
+
 ### Manual
 
-1. Push this repo to GitHub (done).
-2. Go to [vercel.com](https://vercel.com) → Import Project → select the `corgonaut` repo.
-3. Vercel will auto-detect it as static. Deploy.
+1. The repo is already on GitHub.
+2. Vercel has been connected (or import manually from GitHub).
+3. It deploys as a pure static site automatically.
 
-Or with Vercel CLI:
+Or with Vercel CLI from your machine:
 ```bash
 npm i -g vercel
-vercel
+vercel --prod
 ```
-
-Live URL will be something like `https://corgonaut.vercel.app`
 
 The `vercel.json` in the repo configures it as a pure static site.
 
