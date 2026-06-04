@@ -36,6 +36,8 @@
 - **Fullscreen button** (⛶) — immersive mode
 - **Background music** — original toggleable procedural chiptune (🎵)
 - **Mute button** for sound effects (🔊)
+- **Fullscreen** (⛶ or F key — F now safely disabled while typing handles)
+- **Local Leaderboard** — persistent top scores using your login handle. Submit on game over, view from start screen. (Global sync would need backend)
 - **Full mobile support** with virtual joystick + dedicated fire button.
 - Fresh **neon cosmic color scheme** (deep indigo + electric cyan + hot magenta).
 
