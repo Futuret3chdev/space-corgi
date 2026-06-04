@@ -12,7 +12,19 @@ https://mt-ecosystem.vercel.app | https://memetorrent.futuret3ch.com.au
 
 ## How to Play (Desktop + Mobile)
 
-1. Open `index.html` in any modern browser.
+You can double-click `index.html` for basic play.
+
+For full features (wallets, audio, fullscreen, etc.):
+
+```powershell
+# From the space-corgi folder
+python -m http.server 8000
+# open http://localhost:8000/index.html
+```
+
+Or use "Live Server" in VS Code.
+
+Production on Vercel has all features working.
 2. **Mouse / Drag** — Steer the corgi (inertia flight)
 3. **Click / Hold or TAP** — Fire bone "Bork Blasters"
 4. **Mobile**: Left **joystick** + right **BORK** button (auto-shows on touch devices)
