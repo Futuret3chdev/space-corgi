@@ -54,7 +54,7 @@ Click the button at the top of this README, or use:
 https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2FFuturet3chdev%2Fspace-corgi
 
 ### Live Demo
-**https://space-corgi.vercel.app** (or current alias)
+**https://space-corgi.vercel.app**
 
 ### Manual
 
