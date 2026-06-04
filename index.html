@@ -616,9 +616,9 @@
       <h2>CONNECT</h2>
       <p style="font-size:8px; margin-bottom:10px;">Sign in to save progress &amp; earn 🚀 rockets</p>
       
-      <button class="btn auth-btn x" onclick="loginWithSocial('x')">🐦 SIGN IN WITH X</button>
-      <button class="btn auth-btn discord" onclick="loginWithSocial('discord')">💬 SIGN IN WITH DISCORD</button>
-      <button class="btn auth-btn telegram" onclick="loginWithSocial('telegram')">✈️ SIGN IN WITH TELEGRAM</button>
+      <button class="btn auth-btn x" onclick="startSocialLogin('x')">🐦 SIGN IN WITH X</button>
+      <button class="btn auth-btn discord" onclick="startSocialLogin('discord')">💬 SIGN IN WITH DISCORD</button>
+      <button class="btn auth-btn telegram" onclick="startSocialLogin('telegram')">✈️ SIGN IN WITH TELEGRAM</button>
       
       <div style="margin: 10px 0 4px; font-size:8px; color:#00f0ff;">OR CONNECT SOLANA WALLET</div>
       <button class="btn auth-btn wallet" onclick="showWalletOptions()">🔗 CONNECT WALLET</button>
@@ -2814,6 +2814,37 @@
       updateRocketsUI();
       updateMuteUI();
       updateMusicUI();
+
+      // Try silent wallet reconnect if user was previously connected via wallet
+      if (user && user.method === 'wallet' && user.wallet && user.address) {
+        setTimeout(() => attemptWalletReconnect(user.wallet), 800);
+      }
+    }
+
+    async function attemptWalletReconnect(kind) {
+      try {
+        let provider = null;
+        if (kind === 'phantom') provider = window.phantom?.solana || window.solana;
+        else if (kind === 'solflare') provider = window.solflare;
+        else if (kind === 'backpack') provider = window.backpack;
+
+        if (provider && provider.connect) {
+          // onlyIfTrusted = silent reconnect if previously approved
+          const resp = await provider.connect({ onlyIfTrusted: true });
+          let newAddr = '';
+          if (resp && resp.publicKey) newAddr = resp.publicKey.toString();
+          else if (provider.publicKey) newAddr = provider.publicKey.toString();
+
+          if (newAddr && newAddr !== user.address) {
+            user.address = newAddr;
+            user.handle = newAddr.slice(0,4) + '..' + newAddr.slice(-4);
+            saveUser();
+            updateProfileUI();
+          }
+        }
+      } catch (e) {
+        // silent fail is ok — user will need to click connect again
+      }
     }
     
     function saveUser() {
@@ -2839,10 +2870,23 @@
         } else {
           av.innerHTML = '✈️'; av.style.background = '#26A5E4';
         }
+
+        // Add disconnect on long press or double click for convenience
+        pill.ondblclick = () => {
+          if (confirm('Disconnect current account?')) {
+            user = null;
+            localStorage.removeItem('corgonautUser');
+            updateProfileUI();
+            addPopup(W/2, H*0.4, 'DISCONNECTED', '#ff8888');
+          }
+        };
+        pill.title = 'Double-click to disconnect';
       } else {
         nameEl.textContent = 'SIGN IN';
         av.innerHTML = '🐶';
         av.style.background = '#ff2ea8';
+        pill.ondblclick = null;
+        pill.title = 'Click to sign in';
       }
     }
     
@@ -3016,6 +3060,29 @@
         m.style.display = 'flex';
         const wo = document.getElementById('wallet-options');
         if (wo) wo.style.display = 'none';
+
+        // Show quick wallet detection status at the bottom of the panel
+        const panel = m.querySelector('.panel');
+        if (panel) {
+          // remove old status if exists
+          const old = panel.querySelector('#wallet-detect-status');
+          if (old) old.remove();
+
+          const detected = [];
+          if (window.phantom?.solana || (window.solana && window.solana.isPhantom)) detected.push('Phantom');
+          if (window.solflare) detected.push('Solflare');
+          if (window.backpack) detected.push('Backpack');
+
+          const status = document.createElement('div');
+          status.id = 'wallet-detect-status';
+          status.style.cssText = 'font-size:6px; color:#7788aa; margin-top:10px; text-align:center;';
+          if (detected.length > 0) {
+            status.innerHTML = `Wallet(s) detected: <span style="color:#00f0ff;">${detected.join(', ')}</span>`;
+          } else {
+            status.innerHTML = `No Solana wallets detected. Install an extension to connect.`;
+          }
+          panel.appendChild(status);
+        }
       }
     }
     
@@ -3024,6 +3091,60 @@
       if (m) m.style.display = 'none';
     }
     
+    function startSocialLogin(method) {
+      hideLoginModal();
+      const modal = document.getElementById('login-modal');
+      const panel = modal ? modal.querySelector('.panel') : null;
+      if (!panel) return;
+
+      const methodName = method === 'x' ? 'X' : (method.charAt(0).toUpperCase() + method.slice(1));
+      const placeholder = method === 'x' ? '@yourhandle' : (method === 'discord' ? 'YourName#1234' : '@yourtelegram');
+
+      // Replace panel content with a simple real-feeling input form
+      panel.innerHTML = `
+        <div class="close-x" onclick="document.getElementById('login-modal').style.display='none'; location.reload();">✕</div>
+        <h2>Sign in with ${methodName}</h2>
+        <p style="font-size:8px; margin-bottom:8px;">Demo authorization — enter the handle you use on ${methodName}</p>
+        <input id="social-handle-input" type="text" placeholder="${placeholder}" 
+               style="width:100%; padding:8px; background:#0a0f22; color:#fff; border:2px solid #00f0ff; border-radius:4px; font-family:inherit; margin-bottom:10px;">
+        <button class="btn" style="width:100%;" id="social-connect-btn">AUTHORIZE &amp; CONNECT</button>
+        <div style="font-size:6px; color:#556677; margin-top:8px;">This is a client-side demo. No real OAuth (static site limitation).</div>
+      `;
+
+      setTimeout(() => {
+        const input = document.getElementById('social-handle-input');
+        const btn = document.getElementById('social-connect-btn');
+        if (input) input.focus();
+
+        const complete = () => {
+          let handle = input ? input.value.trim() : '';
+          if (!handle) {
+            handle = prompt(`Enter your ${methodName} handle:`) || 'GuestUser';
+          }
+          if (!handle) return;
+
+          user = { method, handle };
+          saveUser();
+          updateProfileUI();
+
+          const bonus = 8 + Math.floor(Math.random() * 6);
+          rockets += bonus;
+          updateRocketsUI();
+
+          addPopup(W / 2, H * 0.3, `+${bonus} ROCKETS`, '#00f0ff');
+          playSound('powerup', 0.7);
+          createParticles(W / 2, H * 0.32, 16, { speed: 1.8, color: method === 'x' ? '#fff' : '#00f0ff', life: 18 });
+
+          // close modal
+          if (modal) modal.style.display = 'none';
+        };
+
+        if (btn) btn.onclick = complete;
+        if (input) input.onkeydown = (e) => { if (e.key === 'Enter') complete(); };
+      }, 30);
+    }
+
+    // Old random version kept for reference but no longer used by buttons
     function loginWithSocial(method) {
       hideLoginModal();
       const names = { x: ['@SpaceBorker', '@CorgiNaut42', '@TailOfStars', '@BorkCosmos'], discord: ['DiscordCorgi#8842', 'NebulaDog', 'VoidFloof'], telegram: ['@corgipilot', '@spacewoof', '@fluffnaut'] };
@@ -3034,21 +3155,59 @@
       saveUser();
       updateProfileUI();
       
-      // bonus rockets for signing in
       const bonus = 8 + Math.floor(Math.random()*6);
       rockets += bonus;
       updateRocketsUI();
       
       addPopup(W/2, H*0.3, `+${bonus} ROCKETS`, '#00f0ff');
       playSound('powerup', 0.7);
-      
-      // small particle welcome
       createParticles(W/2, H*0.32, 16, {speed:1.8, color: method==='x'?'#fff':'#00f0ff', life:18});
     }
     
     function showWalletOptions() {
-      const wo = document.getElementById('wallet-options');
-      if (wo) wo.style.display = (wo.style.display === 'none' || !wo.style.display) ? 'flex' : 'none';
+      const container = document.getElementById('wallet-options');
+      if (!container) return;
+
+      container.style.display = 'flex';
+      container.innerHTML = ''; // clear static buttons
+
+      const detected = [];
+
+      // Robust detection
+      if (window.phantom?.solana || (window.solana && window.solana.isPhantom)) {
+        detected.push({ key: 'phantom', name: 'Phantom' });
+      }
+      if (window.solflare) {
+        detected.push({ key: 'solflare', name: 'Solflare' });
+      }
+      if (window.backpack) {
+        detected.push({ key: 'backpack', name: 'Backpack' });
+      }
+
+      if (detected.length === 0) {
+        const msg = document.createElement('div');
+        msg.style.cssText = 'font-size:8px; color:#ffaa88; text-align:center; width:100%;';
+        msg.innerHTML = `No Solana wallets detected in this browser.<br>
+          Install <a href="https://phantom.app" target="_blank" style="color:#00f0ff;">Phantom</a>, 
+          <a href="https://solflare.com" target="_blank" style="color:#00f0ff;">Solflare</a> or 
+          <a href="https://backpack.app" target="_blank" style="color:#00f0ff;">Backpack</a> and refresh.`;
+        container.appendChild(msg);
+        return;
+      }
+
+      // Show detected wallets
+      const label = document.createElement('div');
+      label.style.cssText = 'font-size:7px; color:#00f0ff; width:100%; text-align:center; margin-bottom:4px;';
+      label.textContent = 'Detected wallets:';
+      container.appendChild(label);
+
+      detected.forEach(w => {
+        const b = document.createElement('button');
+        b.textContent = w.name;
+        b.style.margin = '2px';
+        b.onclick = () => connectWallet(w.key);
+        container.appendChild(b);
+      });
     }
     
     async function connectWallet(kind) {
@@ -3057,39 +3216,69 @@
       let address = '';
       
       try {
-        if (kind === 'phantom' && window.phantom?.solana) {
-          provider = window.phantom.solana;
-          const resp = await provider.connect();
-          address = resp.publicKey.toString();
-        } else if (kind === 'solflare' && window.solflare) {
-          provider = window.solflare;
-          const resp = await provider.connect();
-          address = (resp.publicKey || resp).toString();
-        } else if (kind === 'backpack' && (window.backpack?.solana || window.backpack)) {
-          provider = window.backpack.solana || window.backpack;
-          const resp = await provider.connect();
-          address = (resp.publicKey || resp).toString();
-        } else {
-          alert(`${kind.toUpperCase()} not found. Install the extension and refresh.`);
+        // Improved detection for different wallet injections
+        if (kind === 'phantom') {
+          provider = window.phantom?.solana || (window.solana && window.solana.isPhantom ? window.solana : null);
+        } else if (kind === 'solflare') {
+          provider = window.solflare || (window.solflare && window.solflare.solana);
+        } else if (kind === 'backpack') {
+          provider = window.backpack?.solana || window.backpack;
+        }
+
+        if (!provider) {
+          const installLinks = {
+            phantom: 'https://phantom.app',
+            solflare: 'https://solflare.com',
+            backpack: 'https://backpack.app'
+          };
+          alert(`${kind.toUpperCase()} wallet not detected.\n\nPlease install the browser extension:\n${installLinks[kind] || ''}\nThen refresh the page.`);
           return;
         }
-        
+
+        // Attempt connection (with onlyIfTrusted for possible silent reconnect)
+        let resp;
+        try {
+          resp = await provider.connect({ onlyIfTrusted: true });
+        } catch (e) {
+          // not trusted yet — do normal connect
+          resp = await provider.connect();
+        }
+
+        // Extract public key robustly
+        if (resp && resp.publicKey) {
+          address = resp.publicKey.toString ? resp.publicKey.toString() : resp.publicKey;
+        } else if (provider.publicKey) {
+          address = provider.publicKey.toString ? provider.publicKey.toString() : provider.publicKey;
+        } else if (typeof resp === 'string') {
+          address = resp;
+        }
+
         if (address) {
-          const short = address.slice(0,4) + '..' + address.slice(-4);
+          const short = address.slice(0, 4) + '..' + address.slice(-4);
           user = { method: 'wallet', handle: short, address, wallet: kind };
           saveUser();
           updateProfileUI();
-          
+
           const bonus = 18;
           rockets += bonus;
           updateRocketsUI();
-          addPopup(W/2, H*0.28, `WALLET LINKED +${bonus}🚀`, '#9945ff');
+          addPopup(W / 2, H * 0.28, `WALLET LINKED +${bonus}🚀`, '#9945ff');
           playSound('powerup', 0.95, 0.85);
-          createParticles(W/2, 120, 24, { speed: 2.2, color: '#9945ff', life: 22 });
+          createParticles(W / 2, 120, 24, { speed: 2.2, color: '#9945ff', life: 22 });
+
+          // Optional: sign a message to prove ownership (makes it feel real)
+          try {
+            if (provider.signMessage) {
+              const msg = new TextEncoder().encode(`Verify ownership for Space Corgi: ${Date.now()}`);
+              await provider.signMessage(msg, 'utf8');
+            }
+          } catch (signErr) {
+            // signing is optional, ignore if rejected
+          }
         }
       } catch (err) {
         console.warn('Wallet connect failed', err);
-        alert('Wallet connection failed or rejected.');
+        alert('Wallet connection failed or was rejected by the user.');
       }
     }
     
