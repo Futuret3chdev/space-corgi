@@ -2,6 +2,9 @@
 
 **BETA v0.9** — Single-file browser game. Adorable corgi astronaut + bosses + rockets + sign-in + wallets.
 
+[![GitHub Repo](https://img.shields.io/badge/GitHub-Futuret3chdev%2Fcorgonaut-181717?logo=github)](https://github.com/Futuret3chdev/corgonaut)
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2FFuturet3chdev%2Fcorgonaut)
+
 ## How to Play (Desktop + Mobile)
 
 1. Open `index.html` in any modern browser.
@@ -40,6 +43,31 @@ Power-ups: Rapid Bark • Mega Bork • Shield • **Star Magnet** (new).
 Pure single-file HTML/CSS/JS Canvas. No deps.
 
 Wallet connect uses native injected providers (window.phantom.solana etc.). Social login is a polished local demo (no real OAuth keys needed).
+
+## Deployment (GitHub + Vercel)
+
+The game is **100% static** — perfect for free hosting.
+
+### One-click Deploy to Vercel
+Click the button at the top of this README, or use:
+
+https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2FFuturet3chdev%2Fcorgonaut
+
+### Manual
+
+1. Push this repo to GitHub (done).
+2. Go to [vercel.com](https://vercel.com) → Import Project → select the `corgonaut` repo.
+3. Vercel will auto-detect it as static. Deploy.
+
+Or with Vercel CLI:
+```bash
+npm i -g vercel
+vercel
+```
+
+Live URL will be something like `https://corgonaut.vercel.app`
+
+The `vercel.json` in the repo configures it as a pure static site.
 
 ## Tips (BETA)
 
