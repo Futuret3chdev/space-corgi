@@ -7,7 +7,8 @@
 [![GitHub Repo](https://img.shields.io/badge/GitHub-Futuret3chdev%2Fspace--corgi-181717?logo=github)](https://github.com/Futuret3chdev/space-corgi)
 [![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2FFuturet3chdev%2Fspace-corgi)
 
-**MT ECO SYSTEM by FUTURET3CH & MEMETORRENT** — https://memetorrent.futuret3ch.com.au
+**MT ECO SYSTEM by FUTURET3CH & MEMETORRENT**  
+https://mt-ecosystem.vercel.app | https://memetorrent.futuret3ch.com.au
 
 ## How to Play (Desktop + Mobile)
 
@@ -97,6 +98,6 @@ Enjoy the BETA — bark among the stars, pilot! 🐾✨
 ---
 
 **MT ECO SYSTEM by FUTURET3CH & MEMETORRENT**  
-https://memetorrent.futuret3ch.com.au
+https://mt-ecosystem.vercel.app | https://memetorrent.futuret3ch.com.au
 
 Made with love for corgis, the cosmos, and on-chain corgi pilots.
