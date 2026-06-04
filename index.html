@@ -549,6 +549,7 @@
       <div class="panel">
         <h2>SPACE CORGI <span class="beta-badge" style="font-size:7px; vertical-align:super;">BETA</span></h2>
         <div style="font-size:12px; color:#00f0ff; margin-bottom:4px; line-height:1.05; font-weight:bold; text-shadow: 0 0 6px rgba(0,240,255,0.5);">MT ECO SYSTEM<br><span style="font-size:8px; opacity:0.9;">by FUTURET3CH &amp; MEMETORRENT</span></div>
+
         <p style="margin-bottom: 12px; font-size: 8px;">
           The cutest pilot in the cosmos is back.<br>
           New enemies. Bosses. Rockets. Sign in to earn.
@@ -732,6 +733,38 @@
     try {
       leaderboard = JSON.parse(localStorage.getItem('spaceCorgiLeaderboard') || '[]');
     } catch(e) { leaderboard = []; }
+    
+    // AI Generated Sprites - loaded from sprites/ folder (real images for better graphics)
+    const sprites = {
+      corgi: new Image(),
+      rock: new Image(),
+      cat: new Image(),
+      squirrel: new Image(),
+      comet: new Image(),
+      turret: new Image(),
+      bone: new Image(),
+      powerup: new Image(),
+      boss: new Image()
+    };
+    let spritesLoaded = false;
+    function loadSprites() {
+      sprites.corgi.src = 'sprites/corgi.jpg';
+      sprites.rock.src = 'sprites/rock.jpg';
+      sprites.cat.src = 'sprites/cat.jpg';
+      sprites.squirrel.src = 'sprites/squirrel.jpg';
+      sprites.comet.src = 'sprites/comet.jpg';
+      sprites.turret.src = 'sprites/turret.jpg';
+      sprites.bone.src = 'sprites/bone.jpg';
+      sprites.powerup.src = 'sprites/powerup.jpg';
+      sprites.boss.src = 'sprites/boss.jpg';
+      let loaded = 0;
+      const total = Object.keys(sprites).length;
+      const mark = () => { loaded++; if (loaded >= total) spritesLoaded = true; };
+      Object.values(sprites).forEach(img => {
+        img.onload = mark;
+        img.onerror = mark;
+      });
+    }
     
     let boss = null;
     let lastBossTime = 0;
@@ -1991,6 +2024,34 @@
       const legBob = Math.sin(wagPhase * 3.5) * 0.8;
       const lookDir = Math.atan2(mouseY - y, mouseX - x) * 0.25; // eyes track mouse a bit
       
+      // Use AI generated sprite if loaded for more realistic graphics
+      if (spritesLoaded && sprites.corgi && sprites.corgi.complete && sprites.corgi.naturalWidth > 0) {
+        const s = 52;
+        ctx.drawImage(sprites.corgi, -s/2, -s/2 + bob * 0.4, s, s);
+        
+        // keep animated jet flames on top of sprite for thrust effect
+        if (thrust > 0.2) {
+          const flameIntensity = thrust * 1.2;
+          ctx.fillStyle = `rgba(255, 100, 30, ${0.25 * flameIntensity})`;
+          ctx.beginPath();
+          ctx.ellipse(-15, 0.5, 12 + flameIntensity * 4, 8 + flameIntensity * 2, 0, 0, Math.PI * 2);
+          ctx.fill();
+          const flamePhase = wagPhase * 12;
+          ctx.fillStyle = `rgba(255, 220, 80, ${0.7 * flameIntensity})`;
+          ctx.beginPath();
+          ctx.ellipse(-14 + Math.sin(flamePhase)*1.5, 0.5, 6 + flameIntensity * 3, 4 + flameIntensity, 0, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.fillStyle = `rgba(255, 255, 220, ${0.9 * flameIntensity})`;
+          ctx.beginPath();
+          ctx.ellipse(-13 + Math.cos(flamePhase*1.3)*1, 0.5, 3 + flameIntensity * 1.5, 2.5, 0, 0, Math.PI * 2);
+          ctx.fill();
+        }
+        
+        ctx.restore();
+        return;
+      }
+      
+      // Fallback to detailed procedural drawing if sprites not ready
       // === JETPACK / THRUSTER HOUSING (more modern with glow) ===
       ctx.fillStyle = '#223355';
       ctx.fillRect(-9, -4, 13, 9);
@@ -2288,32 +2349,49 @@
       ctx.save();
       ctx.translate(e.x, e.y);
       
-      if (e.type === 'rock') {
+      const imgSize = e.radius * 2.2;
+      
+      let drawn = false;
+      if (e.type === 'rock' && sprites.rock && sprites.rock.complete) {
         ctx.rotate(e.rot || 0);
-        // more 3D rocky look with facets and highlights
-        ctx.fillStyle = '#7a8a9a';
-        ctx.beginPath();
-        ctx.moveTo(-e.radius, 0);
-        ctx.lineTo(-e.radius * 0.55, -e.radius * 0.95);
-        ctx.lineTo(e.radius * 0.35, -e.radius * 0.9);
-        ctx.lineTo(e.radius * 0.95, -e.radius * 0.2);
-        ctx.lineTo(e.radius * 0.75, e.radius * 0.9);
-        ctx.lineTo(-e.radius * 0.35, e.radius * 0.95);
-        ctx.closePath();
-        ctx.fill();
-        
-        // facets
-        ctx.fillStyle = '#5a6a7a';
-        ctx.beginPath(); ctx.moveTo(-e.radius*0.3, -e.radius*0.5); ctx.lineTo(2, -e.radius*0.7); ctx.lineTo(e.radius*0.5, e.radius*0.3); ctx.fill();
-        
-        ctx.fillStyle = '#aab8c8';
-        ctx.beginPath(); ctx.arc(-3, -4, e.radius * 0.35, 0, Math.PI * 2); ctx.fill();
-        ctx.fillStyle = '#556677';
-        ctx.beginPath(); ctx.arc(6, 6, e.radius * 0.28, 0, Math.PI * 2); ctx.fill();
-        
-        ctx.strokeStyle = '#334455'; ctx.lineWidth = 1.2;
-        ctx.beginPath(); ctx.arc(1, -7, 4.5, 0.6, 2.6); ctx.stroke();
-      } else if (e.type === 'cat') {
+        ctx.drawImage(sprites.rock, -imgSize/2, -imgSize/2, imgSize, imgSize);
+        drawn = true;
+      } else if (e.type === 'cat' && sprites.cat && sprites.cat.complete) {
+        ctx.rotate((e.rot || 0) * 0.3);
+        ctx.drawImage(sprites.cat, -imgSize/2, -imgSize/2, imgSize, imgSize);
+        drawn = true;
+      } else if ((e.type === 'drone' || e.type === 'turret') && sprites.turret && sprites.turret.complete) {
+        ctx.rotate((e.rot || 0) * 1.6);
+        ctx.drawImage(sprites.turret, -imgSize/2, -imgSize/2, imgSize, imgSize);
+        drawn = true;
+      } else if (e.type === 'squirrel' && sprites.squirrel && sprites.squirrel.complete) {
+        ctx.drawImage(sprites.squirrel, -imgSize/2, -imgSize/2, imgSize, imgSize);
+        drawn = true;
+      } else if (e.type === 'comet' && sprites.comet && sprites.comet.complete) {
+        ctx.rotate(e.rot || 0);
+        ctx.drawImage(sprites.comet, -imgSize/2, -imgSize/2, imgSize, imgSize);
+        drawn = true;
+      } else if (e.type === 'void') {
+        // procedural for special void effect
+        const pulse = Math.sin(Date.now()/160)*2.5;
+        ctx.fillStyle = '#0a0a1a';
+        ctx.beginPath(); ctx.arc(0,0,e.radius + pulse + 5,0,Math.PI*2); ctx.fill();
+        ctx.fillStyle = '#000';
+        ctx.beginPath(); ctx.arc(0,0,e.radius*0.55,0,Math.PI*2); ctx.fill();
+        ctx.strokeStyle = '#00f0ff'; ctx.lineWidth = 2.5;
+        ctx.beginPath(); ctx.arc(0,0,e.radius + 3 + pulse*0.6,0,Math.PI*2); ctx.stroke();
+        ctx.strokeStyle = '#ff2ea8'; ctx.globalAlpha = 0.65;
+        ctx.lineWidth = 3;
+        ctx.beginPath(); ctx.ellipse(0,0, e.radius*1.35, e.radius*0.45, 0.4, 0, Math.PI*2); ctx.stroke();
+        ctx.globalAlpha = 1;
+        ctx.strokeStyle = 'rgba(180, 220, 255, 0.15)';
+        ctx.lineWidth = 8;
+        ctx.beginPath(); ctx.arc(0,0,e.radius*1.6,0,Math.PI*2); ctx.stroke();
+        drawn = true;
+      }
+      
+      if (!drawn) {
+        // fallback simple shape
         ctx.rotate((e.rot || 0) * 0.3);
         ctx.fillStyle = '#ff77aa';
         ctx.beginPath(); ctx.ellipse(0, 0, 13, 10, 0, 0, Math.PI * 2); ctx.fill();
@@ -2325,95 +2403,6 @@
         ctx.strokeStyle = '#220a14'; ctx.lineWidth = 1.5;
         ctx.beginPath(); ctx.moveTo(-6,-4); ctx.lineTo(-1,-3.5); ctx.moveTo(6,-4); ctx.lineTo(1,-3.5); ctx.stroke();
         ctx.fillStyle = '#ffeeee'; ctx.fillRect(-1.5,3,1.2,2.5); ctx.fillRect(0.3,3,1.2,2.5);
-      } else if (e.type === 'drone') {
-        ctx.rotate((e.rot || 0) * 1.6);
-        ctx.fillStyle = '#66aaff';
-        ctx.beginPath(); ctx.arc(0,0,12,0,Math.PI*2); ctx.fill();
-        ctx.fillStyle = '#334466';
-        ctx.beginPath(); ctx.arc(0,0,6.5,0,Math.PI*2); ctx.fill();
-        ctx.fillStyle = '#ff3366'; ctx.shadowColor = '#ff3366'; ctx.shadowBlur = 6;
-        ctx.beginPath(); ctx.arc(0,0,3.8,0,Math.PI*2); ctx.fill(); ctx.shadowBlur = 0;
-        ctx.fillStyle = '#445577';
-        ctx.fillRect(-15,-2,6,4); ctx.fillRect(9,-2,6,4); ctx.fillRect(-2,-15,4,6); ctx.fillRect(-2,9,4,6);
-      } else if (e.type === 'squirrel') {
-        // fast space squirrel - fluffy modern look
-        ctx.fillStyle = '#5cffc9';
-        ctx.beginPath(); ctx.ellipse(0,0,11,7.5,0,0,Math.PI*2); ctx.fill();
-        // ears
-        ctx.fillStyle = '#33cc99';
-        ctx.beginPath(); ctx.moveTo(-4,-5); ctx.lineTo(-6,-11); ctx.lineTo(0,-6); ctx.fill();
-        ctx.beginPath(); ctx.moveTo(4,-5); ctx.lineTo(6,-11); ctx.lineTo(0,-6); ctx.fill();
-        // face
-        ctx.fillStyle = '#112211';
-        ctx.fillRect(-5,-2,3,2.5); ctx.fillRect(2,-2,3,2.5);
-        // big fluffy tail
-        ctx.fillStyle = '#aaffdd';
-        ctx.beginPath(); ctx.ellipse(-8, 4, 5, 3.5, -1.2, 0, Math.PI*2); ctx.fill();
-        ctx.fillStyle = '#ffdd66';
-        ctx.beginPath(); ctx.arc(-10, 5, 2.8, 0, Math.PI*2); ctx.fill();
-      } else if (e.type === 'comet') {
-        ctx.rotate(e.rot || 0);
-        // glowing icy comet with better tail
-        ctx.fillStyle = '#b3d9ff';
-        ctx.beginPath(); ctx.arc(0,0,e.radius,0,Math.PI*2); ctx.fill();
-        ctx.fillStyle = '#5c7aa8';
-        ctx.beginPath(); ctx.arc(2,0,e.radius*0.6,0,Math.PI*2); ctx.fill();
-        
-        // long crystal tail
-        ctx.fillStyle = 'rgba(180, 220, 255, 0.6)';
-        ctx.beginPath();
-        ctx.moveTo(-e.radius, 0);
-        ctx.lineTo(-e.radius - 18, -7);
-        ctx.lineTo(-e.radius - 22, 0);
-        ctx.lineTo(-e.radius - 18, 7);
-        ctx.fill();
-        
-        ctx.strokeStyle = '#aaddff'; ctx.lineWidth = 1.5; ctx.globalAlpha = 0.7;
-        ctx.beginPath(); ctx.arc(0,0,e.radius + 4, 0, Math.PI*2); ctx.stroke();
-        ctx.globalAlpha = 1;
-      } else if (e.type === 'void') {
-        // black hole / void with accretion disk and distortion
-        const pulse = Math.sin(Date.now()/160)*2.5;
-        ctx.fillStyle = '#0a0a1a';
-        ctx.beginPath(); ctx.arc(0,0,e.radius + pulse + 5,0,Math.PI*2); ctx.fill();
-        
-        ctx.fillStyle = '#000';
-        ctx.beginPath(); ctx.arc(0,0,e.radius*0.55,0,Math.PI*2); ctx.fill();
-        
-        // bright event horizon ring
-        ctx.strokeStyle = '#00f0ff'; ctx.lineWidth = 2.5;
-        ctx.beginPath(); ctx.arc(0,0,e.radius + 3 + pulse*0.6,0,Math.PI*2); ctx.stroke();
-        
-        // pink/magenta accretion disk
-        ctx.strokeStyle = '#ff2ea8'; ctx.globalAlpha = 0.65;
-        ctx.lineWidth = 3;
-        ctx.beginPath(); ctx.ellipse(0,0, e.radius*1.35, e.radius*0.45, 0.4, 0, Math.PI*2); ctx.stroke();
-        ctx.globalAlpha = 1;
-        
-        // gravitational lensing effect
-        ctx.strokeStyle = 'rgba(180, 220, 255, 0.15)';
-        ctx.lineWidth = 8;
-        ctx.beginPath(); ctx.arc(0,0,e.radius*1.6,0,Math.PI*2); ctx.stroke();
-      } else if (e.type === 'turret') {
-        ctx.rotate(e.rot || 0);
-        // more menacing laser turret with glow
-        ctx.fillStyle = '#9966dd';
-        ctx.beginPath(); ctx.arc(0,0,13,0,Math.PI*2); ctx.fill();
-        
-        ctx.fillStyle = '#331144';
-        ctx.fillRect(-4,-15,8,9);
-        ctx.fillRect(-15,-4,9,8);
-        
-        // glowing core
-        ctx.fillStyle = '#ff4488';
-        ctx.shadowColor = '#ff4488';
-        ctx.shadowBlur = 6;
-        ctx.beginPath(); ctx.arc(0,0,5,0,Math.PI*2); ctx.fill();
-        ctx.shadowBlur = 0;
-        
-        // barrel details
-        ctx.fillStyle = '#6644aa';
-        ctx.fillRect(-2,-18,4,4);
       }
       
       ctx.restore();
@@ -2424,47 +2413,42 @@
       ctx.translate(b.x, b.y);
       ctx.rotate(Math.sin(b.timer * 0.03) * 0.06);
       
-      // huge body
-      ctx.fillStyle = '#2a1a3a';
-      ctx.beginPath(); ctx.ellipse(0, 6, b.radius, b.radius * 0.82, 0, 0, Math.PI*2); ctx.fill();
-      ctx.fillStyle = '#ff77aa';
-      ctx.beginPath(); ctx.ellipse(0, 0, b.radius * 0.82, b.radius * 0.7, 0, 0, Math.PI*2); ctx.fill();
-      
-      // ears
-      ctx.fillStyle = '#cc4488';
-      ctx.beginPath(); ctx.moveTo(-32,-14); ctx.lineTo(-16,-46); ctx.lineTo(-4,-16); ctx.fill();
-      ctx.beginPath(); ctx.moveTo(32,-14); ctx.lineTo(16,-46); ctx.lineTo(4,-16); ctx.fill();
-      
-      // evil face
-      ctx.fillStyle = '#110022';
-      ctx.fillRect(-16, -10, 9, 7);
-      ctx.fillRect(7, -10, 9, 7);
-      ctx.strokeStyle = '#110022'; ctx.lineWidth = 3;
-      ctx.beginPath(); ctx.moveTo(-18,-6); ctx.lineTo(-6,-3); ctx.moveTo(18,-6); ctx.lineTo(6,-3); ctx.stroke();
-      
-      // glowing angry eyes
-      ctx.fillStyle = '#ff1133';
-      ctx.shadowColor = '#ff1133'; ctx.shadowBlur = 8;
-      ctx.beginPath(); ctx.arc(-11, -6, 3.2, 0, Math.PI*2); ctx.fill();
-      ctx.beginPath(); ctx.arc(11, -6, 3.2, 0, Math.PI*2); ctx.fill();
-      ctx.shadowBlur = 0;
-      
-      // crown spikes / void aura
-      ctx.strokeStyle = '#00f0ff'; ctx.lineWidth = 2.5;
-      for (let i = 0; i < 5; i++) {
-        const a = -1.1 + i * 0.55;
-        ctx.beginPath();
-        ctx.moveTo(Math.cos(a)*26, Math.sin(a)*22 - 8);
-        ctx.lineTo(Math.cos(a)*40, Math.sin(a)*38 - 14);
-        ctx.stroke();
+      const size = b.radius * 2.1;
+      if (sprites.boss && sprites.boss.complete) {
+        ctx.drawImage(sprites.boss, -size/2, -size/2, size, size);
+      } else {
+        // fallback procedural
+        ctx.fillStyle = '#2a1a3a';
+        ctx.beginPath(); ctx.ellipse(0, 6, b.radius, b.radius * 0.82, 0, 0, Math.PI*2); ctx.fill();
+        ctx.fillStyle = '#ff77aa';
+        ctx.beginPath(); ctx.ellipse(0, 0, b.radius * 0.82, b.radius * 0.7, 0, 0, Math.PI*2); ctx.fill();
+        ctx.fillStyle = '#cc4488';
+        ctx.beginPath(); ctx.moveTo(-32,-14); ctx.lineTo(-16,-46); ctx.lineTo(-4,-16); ctx.fill();
+        ctx.beginPath(); ctx.moveTo(32,-14); ctx.lineTo(16,-46); ctx.lineTo(4,-16); ctx.fill();
+        ctx.fillStyle = '#110022';
+        ctx.fillRect(-16, -10, 9, 7);
+        ctx.fillRect(7, -10, 9, 7);
+        ctx.strokeStyle = '#110022'; ctx.lineWidth = 3;
+        ctx.beginPath(); ctx.moveTo(-18,-6); ctx.lineTo(-6,-3); ctx.moveTo(18,-6); ctx.lineTo(6,-3); ctx.stroke();
+        ctx.fillStyle = '#ff1133';
+        ctx.shadowColor = '#ff1133'; ctx.shadowBlur = 8;
+        ctx.beginPath(); ctx.arc(-11, -6, 3.2, 0, Math.PI*2); ctx.fill();
+        ctx.beginPath(); ctx.arc(11, -6, 3.2, 0, Math.PI*2); ctx.fill();
+        ctx.shadowBlur = 0;
+        ctx.strokeStyle = '#00f0ff'; ctx.lineWidth = 2.5;
+        for (let i = 0; i < 5; i++) {
+          const a = -1.1 + i * 0.55;
+          ctx.beginPath();
+          ctx.moveTo(Math.cos(a)*26, Math.sin(a)*22 - 8);
+          ctx.lineTo(Math.cos(a)*40, Math.sin(a)*38 - 14);
+          ctx.stroke();
+        }
+        ctx.strokeStyle = b.phase === 2 ? '#ff2ea8' : '#00f0ff';
+        ctx.lineWidth = 2;
+        ctx.globalAlpha = 0.4 + Math.sin(b.timer * 0.1) * 0.25;
+        ctx.beginPath(); ctx.arc(0, 10, b.radius + 12 + (b.phase*3), 0, Math.PI*2); ctx.stroke();
+        ctx.globalAlpha = 1;
       }
-      
-      // phase indicator ring
-      ctx.strokeStyle = b.phase === 2 ? '#ff2ea8' : '#00f0ff';
-      ctx.lineWidth = 2;
-      ctx.globalAlpha = 0.4 + Math.sin(b.timer * 0.1) * 0.25;
-      ctx.beginPath(); ctx.arc(0, 10, b.radius + 12 + (b.phase*3), 0, Math.PI*2); ctx.stroke();
-      ctx.globalAlpha = 1;
       
       ctx.restore();
     }
@@ -2474,46 +2458,17 @@
       ctx.translate(c.x, c.y);
       ctx.rotate(c.rot);
       
-      if (c.type === 'power') {
-        // powerup - glowing orb
-        const pulse = Math.sin(Date.now() / 160) * 0.5 + 1.5;
-        ctx.fillStyle = '#aaffdd';
-        ctx.shadowColor = '#66ffaa';
-        ctx.shadowBlur = 11;
-        ctx.beginPath();
-        ctx.arc(0, 0, 9 * pulse * 0.5 + 5, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.shadowBlur = 0;
-        
-        ctx.fillStyle = '#eeffee';
-        ctx.beginPath();
-        ctx.arc(0, 0, 6, 0, Math.PI * 2);
-        ctx.fill();
-        
-        // star inside
-        ctx.fillStyle = '#55ff99';
-        ctx.fillRect(-1.5, -6, 3, 12);
-        ctx.fillRect(-6, -1.5, 12, 3);
+      const sz = c.radius * 2.4;
+      if (c.type === 'power' && sprites.powerup && sprites.powerup.complete) {
+        ctx.drawImage(sprites.powerup, -sz/2, -sz/2, sz, sz);
+      } else if (sprites.bone && sprites.bone.complete) {
+        ctx.drawImage(sprites.bone, -sz/2, -sz/2, sz, sz);
       } else {
-        // bone / treat
+        // fallback
         ctx.fillStyle = '#ffddaa';
-        ctx.shadowColor = '#ccaa66';
-        ctx.shadowBlur = 3;
-        
-        // bone shape
         ctx.fillRect(-6, -2.5, 12, 5);
-        ctx.beginPath();
-        ctx.arc(-6, 0, 3.5, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.beginPath();
-        ctx.arc(6, 0, 3.5, 0, Math.PI * 2);
-        ctx.fill();
-        
-        ctx.shadowBlur = 0;
-        
-        // highlight
-        ctx.fillStyle = '#fff8';
-        ctx.fillRect(-3, -2, 6, 1.5);
+        ctx.beginPath(); ctx.arc(-6, 0, 3.5, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath(); ctx.arc(6, 0, 3.5, 0, Math.PI * 2); ctx.fill();
       }
       ctx.restore();
     }
@@ -2723,6 +2678,7 @@
         <div style="font-size:20px; color:#ff2ea8; margin-bottom:6px;">${Math.floor(score).toString().padStart(6, '0')}</div>
         ${isNew ? '<div style="color:#00f0ff; font-size:9px; margin-bottom:6px;">★ NEW HIGH SCORE! ★</div>' : ''}
         <div style="font-size:9px; color:#aaccff;">🚀 ROCKETS: <span style="color:#00f0ff">${rockets}</span> &nbsp; • &nbsp; BORKED: <span style="color:#ff88cc">${Math.floor(gameTime * 0.9 + score / 80)}</span></div>
+        <div style="font-size:8px; color:#88ffcc; margin-top:6px;">✅ Score submitted to leaderboard!</div>
       `;
       
       document.getElementById('hud').classList.remove('active');
@@ -2873,6 +2829,8 @@
       setupFullscreenButton();
       setupMobileControls();
       addLeaderboardButtonToStart();
+      
+      loadSprites();
       
       // A couple decorative particles on start screen
       setTimeout(() => {
@@ -3038,6 +2996,33 @@
       localStorage.setItem('spaceCorgiLeaderboard', JSON.stringify(leaderboard));
     }
 
+    function manualSubmitScore() {
+      const nameInput = document.getElementById('submit-name');
+      const scoreInput = document.getElementById('submit-score');
+      if (!nameInput || !scoreInput) return;
+      
+      const handle = nameInput.value.trim() || 'Anonymous Corgi';
+      const sc = parseInt(scoreInput.value) || 0;
+      
+      const entry = {
+        handle: handle,
+        score: sc,
+        date: Date.now(),
+        method: (user && user.method) || 'guest'
+      };
+      
+      leaderboard.unshift(entry);
+      leaderboard.sort((a, b) => b.score - a.score);
+      leaderboard = leaderboard.slice(0, 100);
+      localStorage.setItem('spaceCorgiLeaderboard', JSON.stringify(leaderboard));
+      
+      // Refresh the modal
+      showLeaderboard();
+      
+      // Small feedback
+      addPopup(W/2, H * 0.3, `+${sc} SUBMITTED!`, '#00f0ff');
+    }
+
     function showLeaderboard() {
       const modal = document.getElementById('leaderboard-modal');
       const content = document.getElementById('leaderboard-content');
@@ -3047,10 +3032,24 @@
       const loginM = document.getElementById('login-modal');
       if (loginM) loginM.style.display = 'none';
 
+      // Submit form at top
+      let formHtml = `
+        <div style="background:#112233; padding:8px; border-radius:4px; margin-bottom:10px; border:1px solid #334466;">
+          <div style="font-size:8px; color:#00f0ff; margin-bottom:4px;">SUBMIT SCORE</div>
+          <div style="display:flex; gap:4px; align-items:center;">
+            <input id="submit-name" type="text" placeholder="Your name/handle" value="${(user && user.handle) || ''}" style="flex:1; padding:4px; background:#0a0f22; color:#fff; border:1px solid #00f0ff; font-size:8px;">
+            <input id="submit-score" type="number" placeholder="Score" value="${score || 0}" style="width:70px; padding:4px; background:#0a0f22; color:#fff; border:1px solid #00f0ff; font-size:8px;">
+            <button class="btn" style="padding:4px 8px; font-size:7px;" onclick="manualSubmitScore()">SUBMIT</button>
+          </div>
+        </div>
+      `;
+      
+      let html = formHtml;
+      
       if (leaderboard.length === 0) {
-        content.innerHTML = `<div style="text-align:center; padding:20px; color:#aaccff;">No scores yet.<br>Play a round and submit!</div>`;
+        html += `<div style="text-align:center; padding:20px; color:#aaccff;">No scores yet.<br>Play a round and submit!</div>`;
       } else {
-        let html = '<table style="width:100%; border-collapse: collapse; font-size:9px;">';
+        html += '<table style="width:100%; border-collapse: collapse; font-size:9px;">';
         html += '<tr style="color:#00f0ff; border-bottom:1px solid #334466;"><th style="text-align:left; padding:4px;">#</th><th style="text-align:left; padding:4px;">PILOT</th><th style="text-align:right; padding:4px;">SCORE</th><th style="text-align:right; padding:4px;">DATE</th></tr>';
         
         leaderboard.slice(0, 15).forEach((entry, i) => {
@@ -3066,8 +3065,8 @@
           </tr>`;
         });
         html += '</table>';
-        content.innerHTML = html;
       }
+      content.innerHTML = html;
 
       modal.style.display = 'flex';
     }
