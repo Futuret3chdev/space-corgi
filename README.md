@@ -1,9 +1,9 @@
-# Corgonaut BETA 🐶🚀
+# Space Corgi BETA 🐶🚀
 
 **BETA v0.9** — Single-file browser game. Adorable corgi astronaut + bosses + rockets + sign-in + wallets.
 
-[![GitHub Repo](https://img.shields.io/badge/GitHub-Futuret3chdev%2Fcorgonaut-181717?logo=github)](https://github.com/Futuret3chdev/corgonaut)
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2FFuturet3chdev%2Fcorgonaut)
+[![GitHub Repo](https://img.shields.io/badge/GitHub-Futuret3chdev%2Fspace--corgi-181717?logo=github)](https://github.com/Futuret3chdev/space-corgi)
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2FFuturet3chdev%2Fspace-corgi)
 
 ## How to Play (Desktop + Mobile)
 
@@ -51,10 +51,10 @@ The game is **100% static** — perfect for free hosting.
 ### One-click Deploy to Vercel
 Click the button at the top of this README, or use:
 
-https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2FFuturet3chdev%2Fcorgonaut
+https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2FFuturet3chdev%2Fspace-corgi
 
 ### Live Demo
-**https://corgi-space-game.vercel.app**
+**https://space-corgi.vercel.app** (or current alias)
 
 ### Manual
 
