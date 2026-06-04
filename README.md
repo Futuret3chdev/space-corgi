@@ -2,10 +2,12 @@
 
 **BETA v0.9** — Single-file browser game. Adorable corgi astronaut + bosses + rockets + sign-in + wallets.
 
-**Developed by FUTURET3CH &amp; MEMETORRENT** • Part of the **MT Ecosystem**
+**MT ECO SYSTEM by FUTURET3CH &amp; MEMETORRENT**
 
 [![GitHub Repo](https://img.shields.io/badge/GitHub-Futuret3chdev%2Fspace--corgi-181717?logo=github)](https://github.com/Futuret3chdev/space-corgi)
 [![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2FFuturet3chdev%2Fspace-corgi)
+
+**MT ECO SYSTEM by FUTURET3CH & MEMETORRENT** — https://memetorrent.futuret3ch.com.au
 
 ## How to Play (Desktop + Mobile)
 
@@ -94,7 +96,7 @@ Enjoy the BETA — bark among the stars, pilot! 🐾✨
 
 ---
 
-**Developed by FUTURET3CH & MEMETORRENT**  
-Part of the **MT Ecosystem** (https://mt-ecosystem.vercel.app)
+**MT ECO SYSTEM by FUTURET3CH & MEMETORRENT**  
+https://memetorrent.futuret3ch.com.au
 
 Made with love for corgis, the cosmos, and on-chain corgi pilots.

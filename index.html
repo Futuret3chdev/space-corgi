@@ -61,19 +61,25 @@
       box-shadow: 0 0 6px rgba(255, 46, 168, 0.6);
     }
 
-    .mt-badge {
-      background: #112233;
+    .mt-eco {
+      background: linear-gradient(90deg, #112233, #1a2a44);
       color: #00f0ff;
-      font-size: 8px;
-      padding: 1px 6px;
-      border-radius: 3px;
-      letter-spacing: 1px;
+      font-size: 11px;
+      padding: 4px 10px;
+      border-radius: 4px;
+      letter-spacing: 1.5px;
       border: 1px solid #00f0ff;
       cursor: pointer;
-      transition: background 0.1s;
+      text-align: center;
+      line-height: 1.1;
+      box-shadow: 0 0 8px rgba(0, 240, 255, 0.3);
+      transition: all 0.1s;
+      white-space: nowrap;
     }
-    .mt-badge:hover {
-      background: #1a3344;
+    .mt-eco:hover {
+      background: linear-gradient(90deg, #1a3344, #223355);
+      transform: scale(1.05);
+      box-shadow: 0 0 12px rgba(0, 240, 255, 0.5);
     }
     
     .profile-pill {
@@ -506,7 +512,10 @@
   <div class="top-bar">
     <div style="display:flex; align-items:center; gap:8px;">
       <span class="beta-badge">BETA v0.9</span>
-      <span class="mt-badge" onclick="window.open('https://mt-ecosystem.vercel.app', '_blank')">MT Ecosystem</span>
+      <span class="mt-eco" onclick="window.open('https://memetorrent.futuret3ch.com.au', '_blank')">
+        MT ECO SYSTEM<br>
+        <span style="font-size:6px; opacity:0.9;">by FUTURET3CH &amp; MEMETORRENT</span>
+      </span>
       <div onclick="showLoginModal()" class="profile-pill" id="profile-pill">
         <div class="avatar" id="avatar">🐶</div>
         <span id="profile-name" style="color:#aaccff;">SIGN IN</span>
@@ -536,7 +545,7 @@
     <div id="start-screen" class="overlay">
       <div class="panel">
         <h2>SPACE CORGI <span class="beta-badge" style="font-size:7px; vertical-align:super;">BETA</span></h2>
-        <div style="font-size:7px; color:#00f0ff; margin-bottom:6px;">MT Ecosystem</div>
+        <div style="font-size:9px; color:#00f0ff; margin-bottom:4px; line-height:1.1;">MT ECO SYSTEM<br><span style="font-size:6px; opacity:0.85;">by FUTURET3CH &amp; MEMETORRENT</span></div>
         <p style="margin-bottom: 12px; font-size: 8px;">
           The cutest pilot in the cosmos is back.<br>
           New enemies. Bosses. Rockets. Sign in to earn.
@@ -557,7 +566,7 @@
       <div class="panel">
         <h2>PAUSED</h2>
         <p style="margin-bottom: 14px;">The stars can wait, pilot.</p>
-        <div style="font-size:6px; color:#7788aa; margin-bottom:6px;">Developed by FUTURET3CH &amp; MEMETORRENT • MT Ecosystem</div>
+        <div style="font-size:6px; color:#7788aa; margin-bottom:6px;">MT ECO SYSTEM by FUTURET3CH &amp; MEMETORRENT</div>
         <button id="resume-btn" class="btn">RESUME</button>
       </div>
     </div>
@@ -566,7 +575,7 @@
     <div id="gameover-screen" class="overlay" style="display: none;">
       <div class="panel">
         <h2>GAME OVER</h2>
-        <div style="font-size:6px; color:#7788aa; margin-bottom:4px;">Developed by FUTURET3CH &amp; MEMETORRENT • MT Ecosystem</div>
+        <div style="font-size:6px; color:#7788aa; margin-bottom:4px;">MT ECO SYSTEM by FUTURET3CH &amp; MEMETORRENT</div>
         <div id="final-stats" style="margin: 10px 0 14px; font-size: 10px; line-height: 1.6; color: #aaccff;"></div>
         <button id="retry-btn" class="btn">TRY AGAIN</button>
         <button class="btn" style="width:100%; margin-top:6px; background:#112233; border-color:#00f0ff; color:#00f0ff; font-size:9px;" onclick="hideGameOverAndShowLeaderboard()">VIEW LEADERBOARD</button>
@@ -607,7 +616,7 @@
 
   <div class="footer">
     <span>🐾</span> SPACE CORGI BETA • Sign in with X / Discord / Telegram / Solana for rockets
-    <div style="margin-top:2px; font-size:7px; color:#7788aa;">Developed by FUTURET3CH &amp; MEMETORRENT • MT Ecosystem</div>
+    <div style="margin-top:2px; font-size:7px; color:#7788aa;">MT ECO SYSTEM by FUTURET3CH &amp; MEMETORRENT</div>
   </div>
 
   <!-- Sign-in / Auth Modal -->
@@ -2956,7 +2965,7 @@
       draw(); // first frame
       
       // Keyboard hint in console for devs
-      console.log('%c[Space Corgi BETA] Ready — Developed by FUTURET3CH & MEMETORRENT | MT Ecosystem', 'color:#00f0ff');
+      console.log('%c[Space Corgi BETA] Ready — MT ECO SYSTEM by FUTURET3CH & MEMETORRENT', 'color:#00f0ff');
     }
     
     // ========== BETA: AUTH, ROCKETS, MOBILE, MUTE ==========
