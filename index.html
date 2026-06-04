@@ -2030,7 +2030,12 @@
       // Use AI generated sprite if loaded for more realistic graphics
       if (spritesLoaded && sprites.corgi && sprites.corgi.complete && sprites.corgi.naturalWidth > 0) {
         const s = 52;
+        ctx.save();
+        ctx.beginPath();
+        ctx.ellipse(-2, bob * 0.3, 26, 22, 0, 0, Math.PI * 2);  // clip to body, slightly larger
+        ctx.clip();
         ctx.drawImage(sprites.corgi, -s/2, -s/2 + bob * 0.4, s, s);
+        ctx.restore();
         
         // keep animated jet flames on top of sprite for thrust effect
         if (thrust > 0.2) {
@@ -2359,22 +2364,47 @@
       let drawn = false;
       if (e.type === 'rock' && sprites.rock && sprites.rock.complete) {
         ctx.rotate(e.rot || 0);
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(0, 0, imgSize / 2 * 1.1, 0, Math.PI * 2);
+        ctx.clip();
         ctx.drawImage(sprites.rock, -imgSize/2, -imgSize/2, imgSize, imgSize);
+        ctx.restore();
         drawn = true;
       } else if (e.type === 'cat' && sprites.cat && sprites.cat.complete) {
         ctx.rotate((e.rot || 0) * 0.3);
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(0, 0, imgSize / 2 * 1.1, 0, Math.PI * 2);
+        ctx.clip();
         ctx.drawImage(sprites.cat, -imgSize/2, -imgSize/2, imgSize, imgSize);
+        ctx.restore();
         drawn = true;
       } else if ((e.type === 'drone' || e.type === 'turret') && sprites.turret && sprites.turret.complete) {
         ctx.rotate((e.rot || 0) * 1.6);
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(0, 0, imgSize / 2 * 1.1, 0, Math.PI * 2);
+        ctx.clip();
         ctx.drawImage(sprites.turret, -imgSize/2, -imgSize/2, imgSize, imgSize);
+        ctx.restore();
         drawn = true;
       } else if (e.type === 'squirrel' && sprites.squirrel && sprites.squirrel.complete) {
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(0, 0, imgSize / 2 * 1.1, 0, Math.PI * 2);
+        ctx.clip();
         ctx.drawImage(sprites.squirrel, -imgSize/2, -imgSize/2, imgSize, imgSize);
+        ctx.restore();
         drawn = true;
       } else if (e.type === 'comet' && sprites.comet && sprites.comet.complete) {
         ctx.rotate(e.rot || 0);
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(0, 0, imgSize / 2 * 1.1, 0, Math.PI * 2);
+        ctx.clip();
         ctx.drawImage(sprites.comet, -imgSize/2, -imgSize/2, imgSize, imgSize);
+        ctx.restore();
         drawn = true;
       } else if (e.type === 'void') {
         // procedural for special void effect
@@ -2422,7 +2452,12 @@
       
       const size = b.radius * 2.1;
       if (sprites.boss && sprites.boss.complete) {
+        ctx.save();
+        ctx.beginPath();
+        ctx.ellipse(0, 0, b.radius * 0.95, b.radius * 0.85, 0, 0, Math.PI * 2);
+        ctx.clip();
         ctx.drawImage(sprites.boss, -size/2, -size/2, size, size);
+        ctx.restore();
       } else {
         // fallback procedural
         ctx.fillStyle = '#2a1a3a';
@@ -2469,9 +2504,19 @@
       
       const sz = c.radius * 2.4;
       if (c.type === 'power' && sprites.powerup && sprites.powerup.complete) {
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(0, 0, c.radius * 1.2, 0, Math.PI * 2);
+        ctx.clip();
         ctx.drawImage(sprites.powerup, -sz/2, -sz/2, sz, sz);
+        ctx.restore();
       } else if (sprites.bone && sprites.bone.complete) {
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(0, 0, c.radius * 1.2, 0, Math.PI * 2);
+        ctx.clip();
         ctx.drawImage(sprites.bone, -sz/2, -sz/2, sz, sz);
+        ctx.restore();
       } else {
         // fallback
         ctx.fillStyle = '#ffddaa';
