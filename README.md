@@ -15,6 +15,13 @@
 6. **P** — Pause
 7. **R / Enter** — Restart
 
+**Top-right floating buttons:**
+- 🔊/🔇 Sound effects
+- 🎵/🔕 Background music (toggleable chiptune track)
+- ⛶ Fullscreen (highly recommended for the best experience)
+
+**Keyboard:** Press **F** to toggle fullscreen.
+
 **Sign in** (top-left) with **X, Discord, Telegram** or **connect Phantom / Solflare / Backpack** to earn and keep 🚀 **Rockets**.
 
 ## New in BETA
@@ -24,7 +31,9 @@
 - **Boss fights**: The Void Meowlord appears periodically with phases (homing shots, minion summons, charge attacks). Big rewards.
 - **New enemies**: Zig-zag Squirrels, Icy Comets (split on death), Void (black holes that pull you), Laser Turrets (burst fire).
 - **New power-up**: **STAR MAGNET** — massively increases collect range + orbiting visual + bonus rockets on pickup.
-- **Mute button** (🔊 top-right)
+- **Fullscreen button** (⛶) — immersive mode
+- **Background music** — original toggleable procedural chiptune (🎵)
+- **Mute button** for sound effects (🔊)
 - **Full mobile support** with virtual joystick + dedicated fire button.
 - Fresh **neon cosmic color scheme** (deep indigo + electric cyan + hot magenta).
 

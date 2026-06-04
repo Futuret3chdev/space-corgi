@@ -415,13 +415,12 @@
       user-select: none;
     }
     
-    .mute-btn {
+    .mute-btn, .music-btn, .fullscreen-btn {
       position: absolute;
       top: 10px;
-      right: 10px;
       width: 28px;
       height: 28px;
-      background: rgba(8, 11, 28, 0.7);
+      background: rgba(8, 11, 28, 0.75);
       border: 2px solid #334466;
       border-radius: 4px;
       display: flex;
@@ -431,6 +430,16 @@
       pointer-events: auto;
       cursor: pointer;
       z-index: 25;
+      transition: border-color 0.1s, background 0.1s;
+    }
+    
+    .mute-btn { right: 10px; }
+    .music-btn { right: 44px; }
+    .fullscreen-btn { right: 78px; }
+    
+    .mute-btn:hover, .music-btn:hover, .fullscreen-btn:hover {
+      border-color: #00f0ff;
+      background: rgba(8, 11, 28, 0.95);
     }
     
     .boss-hp {
@@ -570,8 +579,10 @@
       <div id="shoot-btn" class="shoot-btn">BORK</div>
     </div>
     
-    <!-- Floating mute -->
-    <div id="mute-btn" class="mute-btn" title="Toggle sound">🔊</div>
+    <!-- Floating controls -->
+    <div id="fullscreen-btn" class="fullscreen-btn" title="Toggle fullscreen">⛶</div>
+    <div id="music-btn" class="music-btn" title="Toggle background music">🎵</div>
+    <div id="mute-btn" class="mute-btn" title="Toggle sound effects">🔊</div>
   </div>
 
   <div class="footer">
@@ -661,6 +672,11 @@
     let user = null; // {method, handle, address?}
     let rockets = parseInt(localStorage.getItem('corgonautRockets') || '0');
     let isMuted = localStorage.getItem('corgonautMuted') === 'true';
+    let musicEnabled = localStorage.getItem('spaceCorgiMusic') !== 'false'; // default on
+    
+    // Music scheduler
+    let musicTimer = null;
+    let musicStep = 0;
     
     let boss = null;
     let lastBossTime = 0;
@@ -2491,6 +2507,8 @@
       state = 'playing';
       lastShot = performance.now();
       
+      if (musicEnabled) startBackgroundMusic();
+      
       // initial enemy burst
       for (let i = 0; i < 2; i++) setTimeout(spawnEnemy, i * 180);
       
@@ -2500,6 +2518,7 @@
     function endGame() {
       state = 'gameover';
       
+      stopBackgroundMusic();
       endPowerup();
       const bh = document.getElementById('boss-hp');
       if (bh) bh.style.display = 'none';
@@ -2623,6 +2642,11 @@
           e.preventDefault();
           startGame();
         }
+        
+        if (e.key.toLowerCase() === 'f') {
+          e.preventDefault();
+          toggleFullscreen();
+        }
       });
       
       window.addEventListener('keyup', (e) => {
@@ -2655,6 +2679,8 @@
       
       loadPersisted();
       setupMuteButton();
+      setupMusicButton();
+      setupFullscreenButton();
       setupMobileControls();
       
       // A couple decorative particles on start screen
@@ -2762,10 +2788,12 @@
         const savedR = localStorage.getItem('corgonautRockets');
         if (savedR) rockets = parseInt(savedR);
         isMuted = localStorage.getItem('corgonautMuted') === 'true';
+        musicEnabled = localStorage.getItem('spaceCorgiMusic') !== 'false';
       } catch(e){}
       updateProfileUI();
       updateRocketsUI();
       updateMuteUI();
+      updateMusicUI();
     }
     
     function saveUser() {
@@ -2802,6 +2830,159 @@
       const el = document.getElementById('rockets-count');
       if (el) el.textContent = rockets;
       localStorage.setItem('corgonautRockets', rockets);
+    }
+    
+    // ========== BACKGROUND MUSIC (procedural chiptune) ==========
+    function updateMusicUI() {
+      const btn = document.getElementById('music-btn');
+      if (btn) {
+        btn.textContent = musicEnabled ? '🎵' : '🔕';
+        btn.title = musicEnabled ? 'Disable background music' : 'Enable background music';
+        btn.style.borderColor = musicEnabled ? '#00f0ff' : '#334466';
+      }
+    }
+    
+    function playMusicTone(freq, duration, type = 'triangle', volume = 0.07, delay = 0) {
+      if (!audioCtx || !musicEnabled) return;
+      const now = audioCtx.currentTime + delay;
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      const filter = audioCtx.createBiquadFilter();
+      
+      osc.type = type;
+      osc.frequency.value = freq;
+      
+      filter.type = 'lowpass';
+      filter.frequency.value = type === 'square' ? 900 : 1600;
+      
+      gain.gain.value = volume;
+      
+      osc.connect(filter);
+      filter.connect(gain);
+      gain.connect(audioCtx.destination);
+      
+      osc.start(now);
+      
+      // smooth release
+      gain.gain.setValueAtTime(volume, now);
+      gain.gain.linearRampToValueAtTime(0.0001, now + duration);
+      
+      setTimeout(() => {
+        try { osc.stop(); } catch(e) {}
+      }, (duration + 0.15) * 1000);
+    }
+    
+    function scheduleMusicStep() {
+      if (!musicEnabled || !audioCtx) return;
+      
+      const step = musicStep % 16;
+      const beat = 0.185; // tempo ~ 162 bpm for 16ths feel
+      
+      // Bass (every 4 steps)
+      if (step % 4 === 0) {
+        playMusicTone(98, 0.55, 'sine', 0.055); // low G
+      }
+      
+      // Main melody (cute arpeggio)
+      const melody = [
+        392, 523, 659, 523,  // G4 C5 E5 C5
+        440, 587, 698, 587,  // A4 D5 F5 D5
+        392, 523, 784, 659,  // G4 C5 G5 E5
+        587, 523, 440, 392   // D5 C5 A4 G4
+      ];
+      const note = melody[step];
+      if (note) {
+        playMusicTone(note, 0.22, 'triangle', 0.085);
+        // light harmony octave up on some steps
+        if (step % 3 === 1) {
+          playMusicTone(note * 2, 0.16, 'sine', 0.035, 0.03);
+        }
+      }
+      
+      // Rhythmic blips / percussion feel
+      if (step % 2 === 0) {
+        playMusicTone(1240 + (step % 4) * 80, 0.06, 'square', 0.03);
+      }
+      if (step === 7 || step === 15) {
+        playMusicTone(880, 0.09, 'sawtooth', 0.04);
+      }
+      
+      musicStep++;
+      
+      // schedule next
+      musicTimer = setTimeout(scheduleMusicStep, beat * 1000);
+    }
+    
+    function startBackgroundMusic() {
+      if (!audioCtx) initAudio();
+      stopBackgroundMusic();
+      if (!musicEnabled) return;
+      
+      musicStep = 0;
+      // start immediately + schedule
+      scheduleMusicStep();
+      
+      // gentle pad drone
+      setTimeout(() => {
+        if (musicEnabled && audioCtx) {
+          const drone = audioCtx.createOscillator();
+          const dg = audioCtx.createGain();
+          const df = audioCtx.createBiquadFilter();
+          drone.type = 'sine';
+          drone.frequency.value = 196; // G3
+          df.type = 'lowpass';
+          df.frequency.value = 420;
+          dg.gain.value = 0.025;
+          drone.connect(df);
+          df.connect(dg);
+          dg.connect(audioCtx.destination);
+          drone.start();
+          
+          // store to stop later
+          window._musicDrone = { osc: drone, gain: dg };
+          
+          // fade out drone when music stops
+        }
+      }, 80);
+    }
+    
+    function stopBackgroundMusic() {
+      if (musicTimer) {
+        clearTimeout(musicTimer);
+        musicTimer = null;
+      }
+      if (window._musicDrone) {
+        try {
+          window._musicDrone.gain.gain.linearRampToValueAtTime(0.0001, audioCtx.currentTime + 0.6);
+          setTimeout(() => {
+            try { window._musicDrone.osc.stop(); } catch(e){}
+          }, 700);
+        } catch(e){}
+        window._musicDrone = null;
+      }
+    }
+    
+    function toggleMusic() {
+      musicEnabled = !musicEnabled;
+      localStorage.setItem('spaceCorgiMusic', musicEnabled);
+      updateMusicUI();
+      
+      if (musicEnabled) {
+        startBackgroundMusic();
+        // nice confirmation sound
+        setTimeout(() => playSound('collect', 0.3, 1.3), 80);
+      } else {
+        stopBackgroundMusic();
+      }
+    }
+    
+    function setupMusicButton() {
+      const btn = document.getElementById('music-btn');
+      if (!btn) return;
+      btn.onclick = () => {
+        toggleMusic();
+      };
+      updateMusicUI();
     }
     
     function updateMuteUI() {
@@ -2901,7 +3082,52 @@
         updateMuteUI();
         if (!isMuted) playSound('collect', 0.4, 1.6);
       };
+      btn.title = 'Toggle sound effects';
       updateMuteUI();
+    }
+    
+    function toggleFullscreen() {
+      const container = document.getElementById('game-container');
+      if (!container) return;
+      
+      if (!document.fullscreenElement && 
+          !document.webkitFullscreenElement && 
+          !document.mozFullScreenElement) {
+        if (container.requestFullscreen) {
+          container.requestFullscreen().catch(() => {});
+        } else if (container.webkitRequestFullscreen) {
+          container.webkitRequestFullscreen();
+        } else if (container.mozRequestFullScreen) {
+          container.mozRequestFullScreen();
+        } else if (container.msRequestFullscreen) {
+          container.msRequestFullscreen();
+        }
+      } else {
+        if (document.exitFullscreen) document.exitFullscreen();
+        else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
+        else if (document.mozCancelFullScreen) document.mozCancelFullScreen();
+        else if (document.msExitFullscreen) document.msExitFullscreen();
+      }
+    }
+    
+    function updateFullscreenUI() {
+      const btn = document.getElementById('fullscreen-btn');
+      if (!btn) return;
+      const isFS = !!(document.fullscreenElement || 
+                      document.webkitFullscreenElement || 
+                      document.mozFullScreenElement);
+      btn.textContent = isFS ? '🖥️' : '⛶';
+      btn.title = isFS ? 'Exit fullscreen' : 'Enter fullscreen';
+    }
+    
+    function setupFullscreenButton() {
+      const btn = document.getElementById('fullscreen-btn');
+      if (!btn) return;
+      btn.onclick = toggleFullscreen;
+      document.addEventListener('fullscreenchange', updateFullscreenUI);
+      document.addEventListener('webkitfullscreenchange', updateFullscreenUI);
+      document.addEventListener('mozfullscreenchange', updateFullscreenUI);
+      updateFullscreenUI();
     }
     
     function setupMobileControls() {
